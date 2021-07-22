@@ -1,40 +1,58 @@
 const keep_alive = require('./keep_alive.js');
 const Discord = require('discord.js');
+const { tellFortune } = require('./fortune-teller');
+const { tellBadFortune } = require('./bad-fortune-teller');
+const { promoteMucher } = require('./flying');
 const client = new Discord.Client({ 
   ws: { 
     intents: [
       'GUILDS',
+      'GUILD_MEMBERS',
+      'GUILD_PRESENCES',
       'GUILD_MESSAGES',
       'GUILD_VOICE_STATES',
       'GUILD_MESSAGE_TYPING',
-      'GUILD_MESSAGE_REACTIONS'
+      'GUILD_MESSAGE_REACTIONS',
     ] 
   } 
 });
 const token = process.env.token;
 const cron = require("node-cron");
-const github = require("./github.js");
+// const github = require("./github.js");
 const letra = require("./te_amo_tantao.js");
+const ytdl = require('ytdl-core-discord');
+
+const {dorfnate} = require("./dorfnator/index.js");
+const {tts} = require("./tts/index.js");
 
 async function glub(voice_channel) {
   const connection = await voice_channel.join();
   const dispatcher = connection.play("./agua.mp3");
 }
 
-function joinCozinha(client) {
-  client.channels.fetch('690581784139661326')
-    .then(channel => channel.join());
+function joinCozinha(client, message) {
+  const voice_channel = message.member.voice.channel;
+  voice_channel.leave();
+  //client.channels.fetch('690581784139661326')
+    //.then(channel => channel.join());
 }
 
 async function playAudioInChannel(message, audio, client, isStream) {
   const voice_channel = message.member.voice.channel;
-  if (voice_channel) {
-    let connection = await voice_channel.join();
-    let dispatcher = connection.play(audio);
-    
+  try {
+    const connection = await voice_channel.join();
+    let dispatcher;
+    if (String(audio).indexOf('youtube') > 0) {
+      dispatcher = connection.play(await ytdl(audio), { type: 'opus', volume: false });
+    } else {
+      dispatcher = connection.play(audio, { volume: false });
+    }
+      
     dispatcher.on('finish', () => {
       voice_channel.leave();
     });
+  } catch(e) {
+    console.log(e);
   }
 }
 
@@ -58,7 +76,7 @@ client.on('ready', () => {
     });
 });
 
-client.on('message', function(message) {
+client.on('message', async function(message) {
   const { content, channel, author } = message;
   if (channel.type === 'dm') {
     console.log(content, author);
@@ -74,11 +92,11 @@ client.on('message', function(message) {
     let args = content.substring(1).split(' ');
     let cmd = args[0];
     args = args.splice(1);
-    console.log(content);
 
     switch (cmd) {
+      case 'para':
       case 'chega':
-        joinCozinha(client);
+        joinCozinha(client, message);
         break;
       case 'toca':
         playAudioInChannel(message, args[0], client, true);
@@ -99,8 +117,10 @@ client.on('message', function(message) {
         break;
       case 'alienigena':
         playAudioInChannel(message, "https://www.myinstants.com/media/sounds/aligenigenamp3menor.mp3", client);
+        break;
       case 'nova-geracao':
         playAudioInChannel(message, "https://www.myinstants.com/media/sounds/nova-geracao_1.mp3", client);
+        break;
       case 'rodolfo':
         playAudioInChannel(message, "https://www.myinstants.com/media/sounds/bom-dia-acorda-rodolfo-rodolfoooo-part.mp3", client);
         channel.send(`rodolfo rodolfo:pig: RODOLFO!!:astonished: que te passa?:cry: rolim? rolim? rodolfim?? rodolfim? rodolfo  RODOLFO RODOLFO!:sob: esta morto no respira:cry::cry:si respira respira:cold_sweat::nose: esta vivo:flushed::flushed: RODOLFO!! :pig2::pig2::dash: ahhhhh estava dormindo:cold_sweat::cold_sweat: ai que susto:sweat_smile: que susto:sweat_smile::joy: que susto:joy::pig:`);
@@ -114,9 +134,6 @@ client.on('message', function(message) {
         break;
       case 'quintou':
         playAudioInChannel(message, 'quintou.mp3', client)
-        break;
-      case 'pr':
-        github.newRequest(message, args);
         break;
       case 'vamo':
         playAudioInChannel(message, "https://www.myinstants.com/media/sounds/vamo_gremio_fiu_fiu_-2251937486906011096-audiotrimmer.mp3", client);
@@ -160,6 +177,94 @@ client.on('message', function(message) {
       case 'tapa':
       	playAudioInChannel(message, "./tapa.mp3", client);
       	break;
+      case 'cv':
+      	playAudioInChannel(message, 
+        "https://www.myinstants.com/media/sounds/super-xandao-mandando-um-salve-pro-comando-vermelho-f0das3kkkkkk.mp3", 
+        client);
+      	break;
+      case 'vergonha':
+      	playAudioInChannel(message, "vergonha.mp3", client);
+        break;
+      case 'rapaiz':
+        playAudioInChannel(message, 'https://www.myinstants.com/media/sounds/vinheta-xaropinho-rapaz-cut-mp3.mp3', client);
+        break;
+      case 'gusta':
+        playAudioInChannel(message, 'https://www.myinstants.com/media/sounds/no-te-gusta.mp3', client);
+        break;
+      case 'alo-gusta':
+        playAudioInChannel(message, 'https://www.myinstants.com/media/sounds/voice-2015-03-30-14-44.mp3', client);
+        break;
+      case 'oi-gusta':
+        playAudioInChannel(message, 'https://www.myinstants.com/media/sounds/oigustavo.mp3', client);
+        break;
+      case 'vitor':
+        playAudioInChannel(message, 'https://www.myinstants.com/media/sounds/vitor_1l2wEXU.mp3', client);
+        break;
+      case 'richard':
+        playAudioInChannel(message, 'https://www.myinstants.com/media/sounds/wtc-antoine-daniel-super-richard-special-russie.mp3', client);
+        break;
+      case 'uepa':
+        playAudioInChannel(message, 'https://www.myinstants.com/media/sounds/uepa-mp3cut.mp3', client);
+        break;
+      case 'rapaz':
+        playAudioInChannel(message, 'https://www.myinstants.com/media/sounds/vinheta-xaropinho-rapaz_dx3f4Be.mp3', client);
+        break;
+      case 'lucas':
+        playAudioInChannel(message, 'https://www.myinstants.com/media/sounds/oilucas.mp3', client);
+        break;
+      case 'hora':
+        playAudioInChannel(message, 'https://www.myinstants.com/media/sounds/bora-beber-olha-a-hora.mp3', client);
+        break;
+      case 'pedro':
+        playAudioInChannel(message, 'https://www.myinstants.com/media/sounds/parapedro.mp3', client);
+        break;
+      case 'julio':
+        playAudioInChannel(message, 'https://www.myinstants.com/media/sounds/whatsapp-audio-2019-10-10-at-12_ydPdPrv.mp3', client);
+        break;
+      case 'naiguel':
+        playAudioInChannel(message, 'naiguel.mp3', client);
+        break;
+      case 'coelho':
+        playAudioInChannel(message, 'https://www.myinstants.com/media/sounds/vinheta-ifood-2016-fabio-porchat-judite-curtinha.mp3', client);
+        break;
+      case 'marcelo':
+        playAudioInChannel(message, "./marcelo.mp3", client);
+        break;
+      case 'parabens':
+        playAudioInChannel(message, "https://www.myinstants.com/media/sounds/parabens-viu-seu-coco_rPXxWo0.mp3", client);
+        break;
+      case 'sorte':
+        const fortune = await tellFortune(message);
+        const spokenFortune = await tts(fortune);
+        playAudioInChannel(message, spokenFortune, client);
+        break;
+      case 'azar':
+        const badFortune = await tellBadFortune(message);
+        const spokenBadFortune = await tts(badFortune);
+        playAudioInChannel(message, spokenBadFortune, client);
+        break;
+      case 'fofoca':
+        promoteMucher(message, client);
+        break;
+      case 'nicolas':
+        playAudioInChannel(message, "https://www.myinstants.com/media/sounds/yt1s_NhzHkJE.mp3", client);
+        break;
+      case 'leticia':
+        playAudioInChannel(message, "https://www.myinstants.com/media/sounds/botinha-otopetica.mp3", client);
+        break;
+      case 'oi-coelho':
+        playAudioInChannel(message, "https://www.myinstants.com/media/sounds/oi-cueio_1.mp3", client);
+        break;
+      case 'oi-gui':
+        playAudioInChannel(message, "https://www.myinstants.com/media/sounds/oiguilherme.mp3", client);
+        break;
+      case 'dorfnate':
+        dorfnate(args[0], message.channel);
+        break;
+      case 'tts':
+        const audio = await tts(args.join(' '));
+        playAudioInChannel(message, audio, client);
+        break;
     }
   }
 
