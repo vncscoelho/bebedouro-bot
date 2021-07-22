@@ -34,7 +34,7 @@ function joinCozinha(client, message) {
   const voice_channel = message.member.voice.channel;
   voice_channel.leave();
   //client.channels.fetch('690581784139661326')
-    //.then(channel => channel.join());
+    //.then(channel => channel.join()); teste
 }
 
 async function playAudioInChannel(message, audio, client, isStream) {
